@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results — Redrob</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* TOP BAR */
+    .results-header {
+      padding: 2rem 3rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .results-meta h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .results-meta p {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .results-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* SUMMARY STRIP */
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-cell {
+      padding: 1.25rem 2rem;
+      border-right: 1px solid var(--border);
+    }
+    .summary-cell:last-child { border-right: none; }
+
+    .summary-cell .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-cell .value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    /* FILTERS */
+    .filters-bar {
+      padding: 1rem 3rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      background: var(--paper);
+      position: sticky;
+      top: 65px;
+      z-index: 50;
+    }
+
+    .filter-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .filter-btn {
+      padding: 0.3rem 1rem;
+      border: 1.5px solid #4338ca;
+      border-radius: 3px;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: #4338ca;
+      font-weight: 500;
+      transition: all 0.18s;
+      transform: skewX(-10deg);
+      letter-spacing: 0.02em;
+      box-shadow: 3px 3px 0px #c7d2fe;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      background: #4338ca;
+      color: #fff;
+      border-color: #4338ca;
+      box-shadow: 3px 3px 0px #2e2799;
+      transform: skewX(-10deg) translate(-1px, -1px);
+    }
+
+    #searchInput {
+      padding: 0.35rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      background: var(--card);
+      color: var(--ink);
+      outline: none;
+      width: 200px;
+      transition: border-color 0.2s;
+    }
+    #searchInput:focus { border-color: var(--ink); }
+
+    /* RESULTS TABLE */
+    .results-body {
+      padding: 2rem 3rem;
+    }
+
+    .result-card {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 1.25rem;
+      align-items: start;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--border);
+      animation: fadeUp 0.4s ease forwards;
+      opacity: 0;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .result-card:hover,
+    .result-card:focus-visible {
+      background: rgba(0,0,0,0.015);
+      margin: 0 -3rem;
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+
+    .result-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .rank-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding-top: 2px;
+    }
+
+    .rank-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .rank-num.top3 { color: var(--accent); }
+
+    .rank-bar-wrap {
+      width: 28px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .rank-bar {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .candidate-info {
+      min-width: 0;
+    }
+
+    .candidate-topline {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.2rem;
+    }
+
+    .candidate-headline {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.01em;
+    }
+
+    .candidate-id {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .candidate-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .active-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      background: #e6f6ed;
+      border: 1px solid #b7e4ca;
+      color: #166534;
+      border-radius: 2px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .active-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #16a34a;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 0.55rem;
+      max-width: 680px;
+    }
+
+    .skill-tag {
+      padding: 2px 8px;
+      background: var(--tag-bg);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 0.74rem;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .candidate-reasoning {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 620px;
+    }
+
+    .candidate-score {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .score-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .score-bar-wrap {
+      width: 80px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-left: auto;
+    }
+
+    .score-bar {
+      height: 100%;
+      background: var(--accent2);
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    .score-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* SCORE BREAKDOWN DRAWER */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.28);
+      z-index: 250;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .drawer-backdrop.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .score-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(460px, 100vw);
+      background: var(--paper);
+      border-left: 1px solid var(--border);
+      z-index: 260;
+      transform: translateX(100%);
+      transition: transform 0.24s ease;
+      box-shadow: -16px 0 40px rgba(10,10,10,0.16);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .score-drawer.show {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .drawer-kicker {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+    }
+
+    .drawer-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 0.35rem;
+    }
+
+    .drawer-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .drawer-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--ink);
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .drawer-body {
+      padding: 1.5rem;
+      overflow: auto;
+    }
+
+    .drawer-score {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .drawer-score-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .drawer-score-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .breakdown-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .breakdown-row {
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .breakdown-topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      font-size: 0.82rem;
+    }
+
+    .breakdown-label {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .breakdown-value {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .breakdown-track {
+      height: 8px;
+      background: rgba(10,10,10,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .breakdown-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: inherit;
+    }
+
+    .breakdown-empty {
+      padding: 1rem;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+    .empty-state p { font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+    /* CSV DOWNLOAD */
+    #downloadBtn { display: none; }
+
+    /* LOADING */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(245,242,235,0.92);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .loading-overlay.show { display: flex; }
+
+    .loading-ring {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      min-height: 1.4em;
+      transition: opacity 0.2s ease;
+    }
+
+    .loading-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.3em;
+      transition: opacity 0.2s ease;
+    }
+
+    .loading-progress {
+      width: 180px;
+      height: 4px;
+      background: rgba(10,10,10,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .loading-progress span {
+      display: block;
+      width: 38%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: inherit;
+      animation: loadingSlide 1.2s ease-in-out infinite;
+    }
+
+    @keyframes loadingSlide {
+      0% { transform: translateX(-110%); }
+      50% { transform: translateX(80%); }
+      100% { transform: translateX(240%); }
+    }
+
+    /* NO RESULTS */
+    .no-match {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .results-header, .results-body { padding: 1.5rem 1.25rem; }
+      .filters-bar { padding: 0.75rem 1.25rem; }
+      .summary-strip { grid-template-columns: 1fr 1fr; }
+      .result-card { grid-template-columns: 48px 1fr; }
+      .candidate-score { display: none; }
+      .score-drawer { width: 100vw; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Red<span>rob</span></a>
+  <div style="display:flex;gap:1.5rem;align-items:center;">
+    <a href="submit.html">← New submission</a>
+    <span class="tag">Step 2 of 2</span>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-busy="true">
+  <div class="loading-ring"></div>
+  <div class="loading-text" id="loadingText">Ranking candidates…</div>
+  <div class="loading-sub" id="loadingSub">Analyzing JD and computing scores</div>
+  <div class="loading-progress" aria-hidden="true"><span></span></div>
+</div>
+
+<!-- RESULTS HEADER -->
+<div class="results-header" id="resultsHeader" style="display:none;">
+  <div class="results-meta">
+    <h1 id="resultsTitle">Results</h1>
+    <p id="resultsMeta">Top 100 candidates ranked by composite score</p>
+  </div>
+  <div class="results-actions">
+    <button class="btn btn-outline" id="downloadBtn" onclick="downloadCSV()">↓ Download CSV</button>
+    <a href="submit.html" class="btn btn-primary">Submit new JD →</a>
+  </div>
+</div>
+
+<!-- SUMMARY STRIP -->
+<div class="summary-strip" id="summaryStrip" style="display:none;">
+  <div class="summary-cell">
+    <div class="label">Total ranked</div>
+    <div class="value" id="statTotal">—</div>
+  </div>
+  <div class="summary-cell">
+    <div class="label">Top score</div>
+    <div class="value" id="statTop">—</div>
+  </div>
+  <div class="summary-cell">
+    <div class="label">Avg score</div>
+    <div class="value" id="statAvg">—</div>
+  </div>
+  <div class="summary-cell">
+    <div class="label">Job title</div>
+    <div class="value" id="statTitle" style="font-size:1rem;padding-top:4px;">—</div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-bar" id="filtersBar" style="display:none;">
+  <span class="filter-label">Show:</span>
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All 100</button>
+  <button class="filter-btn" data-filter="10" onclick="setFilter(10, this)">Top 10</button>
+  <button class="filter-btn" data-filter="25" onclick="setFilter(25, this)">Top 25</button>
+  <button class="filter-btn" data-filter="50" onclick="setFilter(50, this)">Top 50</button>
+  <span style="margin-left:auto;">
+    <input type="text" id="searchInput" placeholder="Search candidate ID…" oninput="filterSearch(this.value)" />
+  </span>
+</div>
+
+<!-- RESULTS BODY -->
+<div class="results-body" id="resultsList">
+  <!-- Empty state -->
+  <div class="empty-state" id="emptyState">
+    <h2 id="emptyTitle">No results yet</h2>
+    <p id="emptyMessage">Submit a job description to see ranked candidates here.</p>
+    <a href="submit.html" class="btn btn-primary">Submit a JD →</a>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="closeScoreBreakdown()" aria-hidden="true"></div>
+<aside class="score-drawer" id="scoreDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" aria-hidden="true">
+  <div class="drawer-header">
+    <div>
+      <div class="drawer-kicker" id="drawerKicker">Score breakdown</div>
+      <h2 class="drawer-title" id="drawerTitle">Candidate profile</h2>
+      <div class="drawer-subtitle" id="drawerSubtitle"></div>
+    </div>
+    <button class="drawer-close" type="button" onclick="closeScoreBreakdown()" aria-label="Close score breakdown">x</button>
+  </div>
+  <div class="drawer-body">
+    <div class="drawer-score">
+      <div class="drawer-score-value" id="drawerScore">—</div>
+      <div class="drawer-score-label">Composite score based on the candidate signals used for this ranking.</div>
+    </div>
+    <div class="breakdown-list" id="breakdownList"></div>
+  </div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  let allResults = [];
+  let currentRenderedResults = [];
+  let currentFilter = 'all';
+  let loadingTimer = null;
+  let loadingSequenceTimer = null;
+  let loadingStateIndex = 0;
+  const loadingStates = [
+    {
+      text: 'Retrieving from 100K candidates…',
+      sub: 'Scanning the talent pool for relevant matches'
+    },
+    {
+      text: 'Scoring behavioral signals…',
+      sub: 'Weighing engagement, fit, notice period, and activity'
+    },
+    {
+      text: 'Generating reasoning…',
+      sub: 'Preparing concise explanations for each ranked profile'
+    }
+  ];
+
+  function setLoadingState(state) {
+    const textEl = document.getElementById('loadingText');
+    const subEl = document.getElementById('loadingSub');
+    if (!textEl || !subEl) return;
+    textEl.style.opacity = '0';
+    subEl.style.opacity = '0';
+    window.setTimeout(() => {
+      textEl.textContent = state.text;
+      subEl.textContent = state.sub;
+      textEl.style.opacity = '1';
+      subEl.style.opacity = '1';
+    }, 160);
+  }
+
+  function startLoadingSequence() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (!overlay) return;
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-busy', 'true');
+    loadingStateIndex = 0;
+    setLoadingState(loadingStates[loadingStateIndex]);
+
+    loadingSequenceTimer = window.setInterval(() => {
+      loadingStateIndex = (loadingStateIndex + 1) % loadingStates.length;
+      setLoadingState(loadingStates[loadingStateIndex]);
+    }, 1000);
+  }
+
+  function stopLoadingSequence() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (loadingSequenceTimer) {
+      window.clearInterval(loadingSequenceTimer);
+      loadingSequenceTimer = null;
+    }
+    if (loadingTimer) {
+      window.clearTimeout(loadingTimer);
+      loadingTimer = null;
+    }
+    if (!overlay) return;
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-busy', 'false');
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char]));
+  }
+
+  function normalizeSkills(skills) {
+    if (Array.isArray(skills)) return skills;
+    if (typeof skills === 'string') {
+      return skills.split(',').map(skill => skill.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  function isOpenToWork(value) {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      return ['true', 'yes', '1'].includes(value.trim().toLowerCase());
+    }
+    return Boolean(value);
+  }
+
+  function formatBreakdownLabel(key) {
+    return String(key)
+      .replace(/[_-]+/g, ' ')
+      .replace(/\b\w/g, char => char.toUpperCase());
+  }
+
+  function parseScoreBreakdown(breakdown) {
+    if (!breakdown) return {};
+    if (typeof breakdown === 'string') {
+      try {
+        return JSON.parse(breakdown);
+      } catch(e) {
+        return {};
+      }
+    }
+    return typeof breakdown === 'object' ? breakdown : {};
+  }
+
+  function normalizeBreakdownValue(value) {
+    const numeric = Number.parseFloat(value);
+    if (!Number.isFinite(numeric)) return null;
+    const percent = numeric <= 1 ? numeric * 100 : numeric;
+    return Math.max(0, Math.min(100, percent));
+  }
+
+  function openScoreBreakdown(index) {
+    const candidate = currentRenderedResults[index];
+    if (!candidate) return;
+
+    const drawer = document.getElementById('scoreDrawer');
+    const backdrop = document.getElementById('drawerBackdrop');
+    const score = Number.parseFloat(candidate.score);
+    const breakdown = parseScoreBreakdown(candidate.score_breakdown);
+    const rows = Object.entries(breakdown)
+      .map(([key, value]) => [key, normalizeBreakdownValue(value)])
+      .filter(([, value]) => value !== null)
+      .sort((a, b) => b[1] - a[1]);
+
+    document.getElementById('drawerTitle').textContent = candidate.headline || 'Candidate profile';
+    document.getElementById('drawerSubtitle').textContent =
+      `${candidate.candidate_id || 'Candidate'} · Rank #${candidate.rank || '—'}`;
+    document.getElementById('drawerScore').textContent =
+      Number.isFinite(score) ? score.toFixed(3) : '—';
+    document.getElementById('breakdownList').innerHTML = rows.length
+      ? rows.map(([key, value]) => `
+          <div class="breakdown-row">
+            <div class="breakdown-topline">
+              <span class="breakdown-label">${escapeHTML(formatBreakdownLabel(key))}</span>
+              <span class="breakdown-value">${Math.round(value)}%</span>
+            </div>
+            <div class="breakdown-track">
+              <div class="breakdown-fill" style="width:${value}%"></div>
+            </div>
+          </div>
+        `).join('')
+      : '<div class="breakdown-empty">No score breakdown was returned for this candidate.</div>';
+
+    drawer.classList.add('show');
+    backdrop.classList.add('show');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    drawer.querySelector('.drawer-close').focus();
+  }
+
+  function closeScoreBreakdown() {
+    const drawer = document.getElementById('scoreDrawer');
+    const backdrop = document.getElementById('drawerBackdrop');
+    drawer.classList.remove('show');
+    backdrop.classList.remove('show');
+    drawer.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function handleCardKeydown(event, index) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openScoreBreakdown(index);
+    }
+  }
+
+  function showEmptyState(title, message) {
+    document.title = `${title} — Redrob`;
+    document.getElementById('resultsTitle').textContent = title;
+    document.getElementById('emptyTitle').textContent = title;
+    document.getElementById('emptyMessage').textContent = message;
+    document.getElementById('emptyState').style.display = 'block';
+  }
+
+  function init() {
+    const raw = localStorage.getItem('redrob_results');
+    const meta = localStorage.getItem('redrob_meta');
+
+    if (!raw) {
+      showEmptyState(
+        'No results yet',
+        'Could not connect to the ranking server — make sure the API is running.'
+      );
+      return;
+    }
+
+    try {
+      allResults = JSON.parse(raw);
+      const metaObj = meta ? JSON.parse(meta) : {};
+      startLoadingSequence();
+      loadingTimer = window.setTimeout(() => {
+        showResults(metaObj);
+        stopLoadingSequence();
+      }, 2400);
+    } catch(e) {
+      stopLoadingSequence();
+      showEmptyState(
+        'Could not load rankings',
+        'Could not connect to the ranking server — make sure the API is running.'
+      );
+    }
+  }
+
+  function showResults(meta) {
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('resultsHeader').style.display = 'flex';
+    document.getElementById('summaryStrip').style.display = 'grid';
+    document.getElementById('filtersBar').style.display = 'flex';
+    document.getElementById('downloadBtn').style.display = 'inline-flex';
+
+    document.getElementById('resultsTitle').textContent =
+      (meta.title || 'Results') + ' — Ranked Candidates';
+    document.getElementById('resultsMeta').textContent =
+      `Submitted: ${meta.submittedAt || 'just now'} · ${allResults.length} candidates ranked`;
+
+    const scores = allResults.map(r => parseFloat(r.score));
+    document.getElementById('statTotal').textContent = allResults.length;
+    document.getElementById('statTop').textContent = Math.max(...scores).toFixed(3);
+    document.getElementById('statAvg').textContent = (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(3);
+    document.getElementById('statTitle').textContent = meta.title || '—';
+
+    renderCards(allResults);
+  }
+
+  function renderCards(data) {
+    const container = document.getElementById('resultsList');
+    currentRenderedResults = data;
+
+    if (data.length === 0) {
+      container.innerHTML = '<div class="no-match">No candidates match your search.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map((r, i) => {
+      const score = parseFloat(r.score);
+      const scorePct = Math.max(0, Math.min(100, Math.round(score * 100)));
+      const isTop3 = r.rank <= 3;
+      const delay = Math.min(i * 0.04, 0.6);
+      const headline = r.headline || 'Candidate profile';
+      const years = Number.parseFloat(r.years_experience);
+      const experience = Number.isFinite(years) ? `${years} yrs experience` : 'Experience not listed';
+      const noticeDays = Number.parseInt(r.notice_days, 10);
+      const notice = Number.isFinite(noticeDays) ? `Notice: ${noticeDays} days` : '';
+      const skills = normalizeSkills(r.matched_skills).slice(0, 8);
+      const skillTags = skills.length
+        ? `<div class="skill-tags">${skills.map(skill => `<span class="skill-tag">${escapeHTML(skill)}</span>`).join('')}</div>`
+        : '';
+      const activeBadge = isOpenToWork(r.open_to_work)
+        ? '<span class="active-badge">Actively looking</span>'
+        : '';
+
+      return `
+        <div class="result-card" style="animation-delay:${delay}s;" role="button" tabindex="0" onclick="openScoreBreakdown(${i})" onkeydown="handleCardKeydown(event, ${i})" aria-label="Open score breakdown for ${escapeHTML(headline)}">
+          <div class="rank-badge">
+            <div class="rank-num ${isTop3 ? 'top3' : ''}">#${r.rank}</div>
+            <div class="rank-bar-wrap">
+              <div class="rank-bar" style="width:${scorePct}%"></div>
+            </div>
+          </div>
+          <div class="candidate-info">
+            <div class="candidate-topline">
+              <div class="candidate-headline">${escapeHTML(headline)}</div>
+              ${activeBadge}
+            </div>
+            <div class="candidate-id">${escapeHTML(r.candidate_id)}</div>
+            <div class="candidate-meta">
+              <span>${escapeHTML(experience)}</span>
+              ${notice ? `<span>${escapeHTML(notice)}</span>` : ''}
+            </div>
+            ${skillTags}
+            <div class="candidate-reasoning">${escapeHTML(r.reasoning || '—')}</div>
+          </div>
+          <div class="candidate-score">
+            <div class="score-value">${score.toFixed(3)}</div>
+            <div class="score-bar-wrap">
+              <div class="score-bar" style="width:${scorePct}%"></div>
+            </div>
+            <div class="score-label">score</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setFilter(n, btn) {
+    currentFilter = n;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('searchInput').value = '';
+    const filtered = n === 'all' ? allResults : allResults.slice(0, n);
+    renderCards(filtered);
+  }
+
+  function filterSearch(query) {
+    const q = query.toLowerCase();
+    const base = currentFilter === 'all' ? allResults : allResults.slice(0, currentFilter);
+    const filtered = q ? base.filter(r => r.candidate_id.toLowerCase().includes(q)) : base;
+    renderCards(filtered);
+  }
+
+  function downloadCSV() {
+    if (!allResults.length) return;
+    const headers = 'candidate_id,rank,score,reasoning';
+    const rows = allResults.map(r =>
+      `${r.candidate_id},${r.rank},${r.score},"${(r.reasoning || '').replace(/"/g, '""')}"`
+    );
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'submission.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('CSV downloaded!');
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeScoreBreakdown();
+  });
+
+  init();
+</script>
+</body>
+</html>

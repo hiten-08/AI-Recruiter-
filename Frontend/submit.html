@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit JD — Redrob</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-wrap {
+      min-height: calc(100vh - 65px);
+      display: grid;
+      grid-template-columns: 1fr 380px;
+    }
+
+    /* LEFT — FORM */
+    .form-area {
+      padding: 3.5rem 3rem;
+      border-right: 1px solid var(--border);
+    }
+
+    .page-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .back-link {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--ink); }
+
+    .page-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.4rem;
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* FORM */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.01em;
+    }
+
+    label .required { color: var(--accent); margin-left: 2px; }
+    label .hint { color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 0.78rem; }
+
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      background: var(--card);
+      color: var(--ink);
+      transition: border-color 0.2s;
+      outline: none;
+      resize: vertical;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--ink);
+    }
+
+    textarea {
+      min-height: 320px;
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 0.3rem;
+    }
+
+    /* FILE UPLOAD */
+    .file-upload-area {
+      border: 1.5px dashed var(--border);
+      border-radius: 3px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--paper);
+      position: relative;
+    }
+
+    .file-upload-area:hover,
+    .file-upload-area.drag-over {
+      border-color: var(--ink);
+      background: var(--tag-bg);
+    }
+
+    .file-upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .upload-text { font-size: 0.85rem; color: var(--muted); }
+    .upload-text strong { color: var(--ink); }
+    .file-name {
+      margin-top: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* OR DIVIDER */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1rem 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* TWO COLS */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* SUBMIT BUTTON */
+    .submit-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    #submitBtn {
+      flex: 1;
+      justify-content: center;
+      font-size: 1rem;
+      padding: 0.9rem 2rem;
+    }
+
+    #submitBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .submit-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* RIGHT — INFO PANEL */
+    .info-panel {
+      padding: 3rem 2rem;
+      background: #f0ece2;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .info-block h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .info-block p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .tip-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .tip-list li {
+      display: flex;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .tip-list li::before {
+      content: '→';
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .signal-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 0.5rem;
+    }
+
+    .signal-pill {
+      padding: 3px 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 0.72rem;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .constraint-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+    .constraint-row:last-child { border: none; }
+    .constraint-row span:first-child { color: var(--muted); }
+    .constraint-row span:last-child { font-weight: 500; }
+
+    @media (max-width: 900px) {
+      .page-wrap { grid-template-columns: 1fr; }
+      .info-panel { border-top: 1px solid var(--border); }
+      .form-area { padding: 2rem 1.25rem; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Red<span>rob</span></a>
+  <div style="display:flex;gap:1.5rem;align-items:center;">
+    <a href="index.html">Home</a>
+    <span class="tag">Step 1 of 2</span>
+  </div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- FORM AREA -->
+  <div class="form-area">
+    <div class="page-eyebrow">
+      <a href="index.html" class="back-link">← Back to home</a>
+    </div>
+    <h1 class="page-title fade-up">Submit Job Description</h1>
+    <p class="page-subtitle fade-up delay-1">Paste or upload your JD. We'll rank the top 100 matching candidates and return scores with reasoning.</p>
+
+    <form id="jdForm" novalidate>
+
+      <!-- JD TITLE -->
+      <div class="form-group fade-up delay-1">
+        <label for="jdTitle">Job Title <span class="required">*</span></label>
+        <input type="text" id="jdTitle" placeholder="e.g. Senior AI Engineer" required />
+      </div>
+
+      <!-- FILE UPLOAD -->
+      <div class="form-group fade-up delay-2">
+        <label>Upload JD File <span class="hint">optional — .txt or .md</span></label>
+        <div class="file-upload-area" id="dropZone">
+          <input type="file" id="jdFile" accept=".txt,.md" />
+          <div class="upload-icon">📄</div>
+          <div class="upload-text"><strong>Click to upload</strong> or drag & drop</div>
+          <div class="upload-text">.txt or .md files only</div>
+          <div class="file-name" id="fileName"></div>
+        </div>
+      </div>
+
+      <div class="or-divider">or paste directly</div>
+
+      <!-- JD TEXT -->
+      <div class="form-group fade-up delay-2">
+        <label for="jdText">Job Description Text <span class="required">*</span></label>
+        <textarea
+          id="jdText"
+          placeholder="Paste the full job description here. Include responsibilities, required skills, experience range, location, and any cultural signals. The more context, the better the ranking."
+          required
+        ></textarea>
+        <div class="char-count"><span id="charCount">0</span> characters</div>
+      </div>
+
+      <!-- META -->
+      <div class="two-col fade-up delay-3">
+        <div class="form-group">
+          <label for="location">Preferred Location <span class="hint">optional</span></label>
+          <input type="text" id="location" placeholder="e.g. Pune, Noida" />
+        </div>
+        <div class="form-group">
+          <label for="experience">Experience Range <span class="hint">optional</span></label>
+          <input type="text" id="experience" placeholder="e.g. 5–9 years" />
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-wrap fade-up delay-4">
+        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+          Show Results →
+        </button>
+        <p class="submit-note">Results in ~2–5 seconds.<br/>Top 100 candidates ranked with scores.</p>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="info-panel">
+
+    <div class="info-block">
+      <h3>Tips for better results</h3>
+      <ul class="tip-list">
+        <li>Include the full JD, not just a summary</li>
+        <li>Mention explicit disqualifiers if any</li>
+        <li>Add location and notice period requirements</li>
+        <li>Describe the "vibe" — culture signals matter</li>
+        <li>Avoid keyword stuffing — the model reads intent</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>Behavioral signals used</h3>
+      <p style="margin-bottom:0.6rem;">Each candidate is scored using 23 behavioral signals including:</p>
+      <div class="signal-pills">
+        <span class="signal-pill">Response rate</span>
+        <span class="signal-pill">Last active</span>
+        <span class="signal-pill">Notice period</span>
+        <span class="signal-pill">GitHub score</span>
+        <span class="signal-pill">Interview completion</span>
+        <span class="signal-pill">Open to work</span>
+        <span class="signal-pill">Salary range</span>
+        <span class="signal-pill">Willing to relocate</span>
+        <span class="signal-pill">Profile completeness</span>
+      </div>
+    </div>
+
+    <div class="info-block">
+      <h3>Compute constraints</h3>
+      <div class="constraint-row"><span>Max runtime</span><span>5 min</span></div>
+      <div class="constraint-row"><span>Memory limit</span><span>16 GB RAM</span></div>
+      <div class="constraint-row"><span>GPU usage</span><span>Not allowed</span></div>
+      <div class="constraint-row"><span>Network calls</span><span>Offline only</span></div>
+      <div class="constraint-row"><span>Max submissions</span><span>3 total</span></div>
+    </div>
+
+    <div class="info-block">
+      <h3>What you'll get</h3>
+      <ul class="tip-list">
+        <li>Top 100 candidates ranked by composite score</li>
+        <li>Per-candidate reasoning (1–2 sentences)</li>
+        <li>Scores monotonically decreasing rank 1→100</li>
+        <li>CSV-ready output for submission</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+<script>
+  const textarea = document.getElementById('jdText');
+  const charCount = document.getElementById('charCount');
+  const fileInput = document.getElementById('jdFile');
+  const fileName  = document.getElementById('fileName');
+  const dropZone  = document.getElementById('dropZone');
+
+  textarea.addEventListener('input', () => {
+    charCount.textContent = textarea.value.length.toLocaleString();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    fileName.textContent = '✓ ' + file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      textarea.value = ev.target.result;
+      charCount.textContent = textarea.value.length.toLocaleString();
+    };
+    reader.readAsText(file);
+  });
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    fileName.textContent = '✓ ' + file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      textarea.value = ev.target.result;
+      charCount.textContent = textarea.value.length.toLocaleString();
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('jdForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('jdTitle').value.trim();
+    const jdText = textarea.value.trim();
+    const location = document.getElementById('location').value.trim();
+    const experience = document.getElementById('experience').value.trim();
+
+    if (!title) { showToast('Please enter a job title.'); return; }
+    if (!jdText) { showToast('Please paste or upload a job description.'); return; }
+
+    await submitJD({ title, jdText, location, experience });
+  });
+</script>
+</body>
+</html>
